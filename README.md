@@ -1,6 +1,10 @@
 ## Usage
 
-Install all dependencies:
+### Prerequisites
+
+Install nodejs 22
+
+Install all the dependencies:
 
 ```
 npm install
