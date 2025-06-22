@@ -3,6 +3,7 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { jwt, sign } from 'hono/jwt';
 import type { JwtVariables } from 'hono/jwt';
+import { verify } from 'hono/jwt';
 import { db } from './db/index.js';
 import { todosTable, usersTable } from './db/schema.js';
 import { zValidator } from '@hono/zod-validator';
@@ -87,7 +88,16 @@ const getUsers = api.get('/users', async (c) => {
 });
 
 const getTodos = api.get('/todos', async (c) => {
-  const todos = await db.select().from(todosTable);
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader) {
+    return c.json({ error: 'Token is not found' }, 401);
+  }
+  const token = authHeader.slice(7);
+  const payload = await verify(token, process.env.JWT_SECRET!);
+  const todos = await db
+    .select()
+    .from(todosTable)
+    .where(eq(todosTable.userId, payload.id as number));
   return c.json(todos);
 });
 
@@ -122,8 +132,17 @@ const postTodos = api.post(
     }),
   ),
   async (c) => {
+    const authHeader = c.req.header('Authorization');
+    if (!authHeader) {
+      return c.json({ error: 'Token is not found' }, 401);
+    }
+    const token = authHeader.slice(7);
+    const payload = await verify(token, process.env.JWT_SECRET!);
     const newTodo = c.req.valid('json');
-    const todos = await db.insert(todosTable).values(newTodo).returning();
+    const todos = await db
+      .insert(todosTable)
+      .values({ ...newTodo, userId: payload.id as number })
+      .returning();
     return c.json(todos[0], 201);
   },
 );

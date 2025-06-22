@@ -12,4 +12,5 @@ export const todosTable = sqliteTable('todos-table', {
   body: text().notNull(),
   status: text({ enum: ['inprogress', 'completed'] }).default('inprogress'),
   createdAt: text().default(sql`(CURRENT_TIMESTAMP)`),
+  userId: int().references(() => usersTable.id),
 });
