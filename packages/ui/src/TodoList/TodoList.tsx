@@ -1,13 +1,18 @@
-import { Checkbox, Flex, List, message, Typography } from 'antd';
+import { Checkbox, Flex, List, message, Typography, Button, Modal } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { client } from '../apiClient';
 import type { InferResponseType } from 'hono';
 
-type Todos = InferResponseType<typeof client.todos.$get>;
+type Todos = Exclude<
+  InferResponseType<typeof client.todos.$get>,
+  { error: string }
+>;
 
 export const TodoList = () => {
   const [todos, setTodos] = useState<Todos>([]);
-  const [messageApi, contextHolder] = message.useMessage();
+  const [messageApi, messageContext] = message.useMessage();
+  const [modalApi, modalContext] = Modal.useModal();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -17,7 +22,7 @@ export const TodoList = () => {
         { headers: { authorization: `Bearer ${token}` } },
       );
       const todos = await response.json();
-      setTodos(todos);
+      setTodos(todos as Todos);
     };
 
     fetchTodos();
@@ -42,16 +47,52 @@ export const TodoList = () => {
       });
       return;
     }
-    setTodos(todos.map((todo) => (todo.id === result.id ? result : todo)));
+    setTodos(
+      todos.map((todo) =>
+        todo.id === (result as Todos[number]).id
+          ? (result as Todos[number])
+          : todo,
+      ),
+    );
     messageApi.open({
       type: 'success',
       content: 'Todo has been updated',
     });
   };
 
+  const handleDeleteTodo = async (id: number) => {
+    const confirmed = await modalApi.confirm({
+      title: 'Delete todo?',
+    });
+    if (!confirmed) {
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    const response = await client.todos.$delete(
+      { json: { id } },
+      { headers: { authorization: `Bearer ${token}` } },
+    );
+    const result = await response.json();
+    if (response.status !== 200) {
+      messageApi.open({
+        type: 'error',
+        content: (result as { error: string })?.error ?? 'Unknown error',
+      });
+      return;
+    }
+    messageApi.open({
+      type: 'info',
+      content: 'Todo has been deleted',
+    });
+
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
   return (
     <>
-      {contextHolder}
+      {messageContext}
+      {modalContext}
       <List
         dataSource={todos}
         renderItem={(item) => (
@@ -68,6 +109,13 @@ export const TodoList = () => {
                   handleComplete(item.id, event.target.checked)
                 }
                 checked={item.status === 'completed'}
+              >
+                Completed
+              </Checkbox>
+              <Button
+                icon={<DeleteOutlined />}
+                danger
+                onClick={() => handleDeleteTodo(item.id)}
               />
             </Flex>
           </List.Item>
