@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/src/index.js"
+    "start": "node dist/src/index.js",
+    "db:init": "drizzle-kit push"
   },
   "dependencies": {
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
