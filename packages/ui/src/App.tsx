@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import { Auth } from './Auth/Auth';
+import { Auth } from './Auth';
+import { Main } from './Main';
 
 function App() {
   const [token, setToken] = useState<string | null>(null);
@@ -11,7 +12,7 @@ function App() {
       setToken(localToken);
       return;
     }
-  });
+  }, []);
 
   const handleAuth = (token: string) => {
     setToken(token);
@@ -21,7 +22,7 @@ function App() {
   if (!token) {
     return <Auth onAuth={handleAuth} />;
   }
-  return <h1>Welcome!</h1>;
+  return <Main />;
 }
 
 export default App;
