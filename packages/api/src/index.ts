@@ -207,11 +207,11 @@ serve(
   },
 );
 
-export type ApiType = typeof postUsers &
-  typeof authLogin &
-  typeof getUsers &
-  typeof getTodos &
-  typeof getTodo &
-  typeof postTodos &
-  typeof deleteTodos &
+export type ApiType = typeof postUsers |
+  typeof authLogin |
+  typeof getUsers |
+  typeof getTodos |
+  typeof getTodo |
+  typeof postTodos |
+  typeof deleteTodos |
   typeof patchTodos;
