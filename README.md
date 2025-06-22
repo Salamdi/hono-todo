@@ -42,4 +42,4 @@ npm run dev -w packages/ui
 
 ### Open the UI on your browser
 
-Navigate to [localhost:3001](http://localhost:3001)
+Navigate to [localhost:5173](http://localhost:5173)
