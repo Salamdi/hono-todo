@@ -200,7 +200,7 @@ app.route('/api', api);
 serve(
   {
     fetch: app.fetch,
-    port: 3001,
+    port: process.env.PORT ? parseInt(process.env.PORT) : 3001,
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
